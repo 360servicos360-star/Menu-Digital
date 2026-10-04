@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mata:#0E2A1E; --folha:#173A29; --folha-2:#1F4A35;
+    --palma:#F2A31B; --piri:#D8402F; --osso:#F5EFE2; --osso-2:#B9C4B5;
+    --linha:rgba(245,239,226,.12);
+    --display:'Fraunces',Georgia,'Times New Roman',serif;
+    --corpo:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--corpo);background:#081A12;color:var(--osso);min-height:100vh;line-height:1.4}
+  button,input,textarea,select{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none}
+  :focus-visible{outline:2px solid var(--palma);outline-offset:2px}
+
+  .stage{display:flex;justify-content:center;gap:56px}
+  .side{display:none}
+  .app{width:100%;max-width:440px;min-height:100vh;background:var(--mata);position:relative;padding-bottom:110px}
+
+  .pano{height:14px;background:conic-gradient(from 135deg at 50% 100%, var(--palma) 0 90deg, transparent 0) 0 0/28px 14px,var(--piri)}
+  .pano.fino{height:8px;background-size:16px 8px}
+
+  /* Barra do dono */
+  .dono{display:none;position:sticky;top:0;z-index:12;background:var(--palma);color:#241500;padding:10px 14px;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+  .dono.on{display:flex}
+  .dono b{margin-right:auto;font-weight:700}
+  .dono button{background:#241500;color:var(--palma);padding:7px 12px;border-radius:999px;font-weight:600;font-size:13px}
+
+  header.hero{padding:26px 22px 20px}
+  .topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+  .selo{font-size:13px;color:var(--osso-2);display:flex;align-items:center;gap:8px}
+  .selo i{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 4px rgba(74,222,128,.18)}
+  .icon-btn{width:40px;height:40px;border-radius:12px;background:var(--folha);display:grid;place-items:center;font-size:17px;border:1px solid var(--linha)}
+  .logo{display:block;max-height:76px;max-width:200px;object-fit:contain;margin-bottom:14px;border-radius:10px}
+  .hero h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,52px);line-height:.98;letter-spacing:-.02em}
+  .hero p{margin-top:12px;color:var(--osso-2);font-size:15px;max-width:32ch}
+  .chips-info{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .info{padding:7px 12px;border-radius:999px;background:var(--folha);border:1px solid var(--linha);font-size:13px;color:var(--osso-2)}
+  .info.mesa{background:var(--palma);border-color:var(--palma);color:#241500;font-weight:600}
+
+  .busca{margin:0 22px;position:relative}
+  .busca input{width:100%;padding:14px 16px 14px 44px;border-radius:14px;border:1px solid var(--linha);background:var(--folha);font-size:15px}
+  .busca input::placeholder{color:var(--osso-2)}
+  .busca span{position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.8}
+
+  .sticky{position:sticky;top:0;z-index:5;background:var(--mata);padding:14px 0 10px}
+  .dono.on + header + .busca + .sticky{top:52px}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:0 22px 2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;padding:9px 14px;border-radius:999px;background:var(--folha);border:1px solid var(--linha);font-size:14px;font-weight:500;color:var(--osso-2)}
+  .chip[aria-pressed="true"]{background:var(--palma);border-color:var(--palma);color:#241500;font-weight:600}
+  .chips.preco{margin-top:8px}
+  .chips.preco .chip{font-size:13px;padding:7px 12px;background:transparent}
+  .chips.preco .chip[aria-pressed="true"]{background:var(--folha-2);border-color:var(--palma);color:var(--palma)}
+
+  main{padding:6px 22px 0}
+  .cat-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:22px 0 12px}
+  .cat-titulo{font-family:var(--display);font-weight:600;font-size:24px}
+  .cat-sub{font-size:13px;color:var(--osso-2);margin-top:2px}
+  .mini{padding:7px 12px;border-radius:999px;background:var(--palma);color:#241500;font-weight:600;font-size:13px;white-space:nowrap}
+  .mini.sec{background:var(--folha-2);color:var(--osso)}
+  .item{display:grid;grid-template-columns:84px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--linha)}
+  .item.off{opacity:.5}
+  .foto{width:84px;height:84px;border-radius:16px;display:grid;place-items:center;font-size:38px;background:var(--folha-2);overflow:hidden}
+  .foto img{width:100%;height:100%;object-fit:cover}
+  .item h3{font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--piri);color:#fff}
+  .tag.top{background:var(--palma);color:#241500}
+  .tag.off{background:#555;color:#fff}
+  .item p{font-size:13px;color:var(--osso-2);margin-top:3px}
+  .linha-preco{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px}
+  .preco-v{font-family:var(--display);font-weight:600;font-size:18px;color:var(--palma)}
+  .add{padding:8px 16px;border-radius:999px;background:var(--osso);color:#12301F;font-weight:600;font-size:14px}
+  .add:active{transform:scale(.96)}
+  .qtd{display:flex;align-items:center;gap:4px;background:var(--folha-2);border-radius:999px;padding:3px}
+  .qtd button{width:32px;height:32px;border-radius:50%;background:var(--osso);color:#12301F;font-size:18px;font-weight:600;line-height:1}
+  .qtd span{min-width:24px;text-align:center;font-weight:600}
+  .adm-acoes{display:flex;gap:8px;margin-top:10px}
+  .vazio{padding:40px 0;text-align:center;color:var(--osso-2)}
+  .vazio b{display:block;color:var(--osso);font-size:17px;margin-bottom:4px}
+
+  .fab-wrap{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:center;z-index:20;pointer-events:none}
+  .fab{pointer-events:auto;width:calc(100% - 36px);max-width:404px;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-radius:18px;background:var(--palma);color:#241500;font-weight:600;box-shadow:0 14px 30px rgba(0,0,0,.4)}
+  .fab[hidden]{display:none}
+  .fab .n{background:#241500;color:var(--palma);border-radius:999px;min-width:26px;height:26px;display:inline-grid;place-items:center;font-size:13px;margin-right:10px;padding:0 7px}
+
+  .veu{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+  .veu.on{opacity:1;pointer-events:auto}
+  .folha{position:fixed;left:0;right:0;bottom:0;margin:auto;max-width:440px;max-height:90vh;overflow:auto;background:var(--folha);border-radius:24px 24px 0 0;z-index:31;padding:22px 22px 28px;transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
+  .folha.on{transform:none;visibility:visible}
+  .folha h2{font-family:var(--display);font-size:26px;font-weight:800;margin-bottom:14px;padding-right:44px}
+  .fecha{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:50%;background:var(--folha-2);font-size:16px}
+  .c-linha{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--linha)}
+  .c-linha b{font-weight:600;display:block}
+  .c-linha small{color:var(--osso-2)}
+  .total{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 6px;border-top:1px solid var(--linha);font-size:15px}
+  .total strong{font-family:var(--display);font-size:28px;color:var(--palma)}
+  label.campo{display:block;font-size:13px;color:var(--osso-2);margin:14px 0 6px}
+  .campo-in{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--mata);font-size:15px}
+  textarea.campo-in{resize:vertical;min-height:64px}
+  .btn-grande{display:flex;justify-content:center;align-items:center;gap:10px;width:100%;margin-top:18px;padding:15px;border-radius:16px;background:var(--palma);color:#241500;font-weight:700;font-size:16px;text-decoration:none}
+  .btn-grande.wpp{background:#25D366;color:#06260F}
+  .btn-grande.perigo{background:transparent;color:#FF8A7D;border:1px solid rgba(255,138,125,.4);margin-top:10px}
+  .btn-grande.sec{background:var(--folha-2);color:var(--osso)}
+  .btn-grande.off{opacity:.45;pointer-events:none}
+  .nota{font-size:12px;color:var(--osso-2);margin-top:10px;text-align:center}
+  .erro{color:#FF8A7D;font-size:13px;margin-top:8px;min-height:18px}
+  .foto-edit{display:flex;gap:14px;align-items:center}
+  .foto-edit .foto{width:96px;height:96px;flex:none}
+  .foto-edit .col{display:grid;gap:8px}
+  .file-btn{display:inline-block;padding:9px 14px;border-radius:12px;background:var(--palma);color:#241500;font-weight:600;font-size:14px;text-align:center;cursor:pointer}
+  .file-btn input{display:none}
+  .linha2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .check{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:15px}
+  .check input{width:20px;height:20px;accent-color:var(--palma)}
+
+  .toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);background:var(--osso);color:#12301F;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transition:.2s;z-index:40;pointer-events:none;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media (min-width:960px){
+    .stage{padding:32px 0}
+    .app{border-radius:36px;min-height:0;height:calc(100vh - 64px);overflow:auto;border:8px solid #04100A;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+    .fab-wrap{position:absolute;bottom:18px}
+    .side{display:block;width:340px;padding-top:56px}
+    .side h2{font-family:var(--display);font-size:38px;line-height:1.05;font-weight:800;letter-spacing:-.02em}
+    .side p{color:var(--osso-2);margin-top:14px}
+    .side ul{margin:22px 0;padding:0;list-style:none;display:grid;gap:12px}
+    .side li{padding-left:22px;position:relative;font-size:15px}
+    .side li::before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;background:var(--palma);transform:rotate(45deg)}
+    .side .acoes{display:flex;gap:10px;flex-wrap:wrap}
+    .btn2{padding:12px 16px;border-radius:12px;background:var(--palma);color:#241500;font-weight:600}
+    .btn2.sec{background:transparent;color:var(--osso);border:1px solid var(--linha)}
+    .side small{display:block;margin-top:14px;color:var(--osso-2)}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="side">
+    <h2>O menu do seu restaurante, no telemóvel do cliente.</h2>
+    <p>O cliente lê o QR Code na mesa, escolhe e envia o pedido pelo WhatsApp. O dono muda pratos, preços e fotos quando quiser.</p>
+    <ul>
+      <li>Menu de hoje: ligar e desligar pratos num toque</li>
+      <li>Alterar nomes, preços e fotos com a senha do dono</li>
+      <li>Logo do restaurante no topo do menu</li>
+    </ul>
+    <div class="acoes">
+      <button class="btn2" id="sideQR">Simular QR Code da mesa</button>
+      <button class="btn2 sec" id="sideDono">Entrar como dono</button>
+    </div>
+    <small>Senha do dono nesta demo: 1234</small>
+  </aside>
+
+  <div class="app" id="app">
+    <div class="pano"></div>
+    <div class="dono" id="barraDono">
+      <b>Modo dono</b>
+      <button id="bDef">Definições</button>
+      <button id="bBackup">Backup</button>
+      <button id="bSair">Sair</button>
+    </div>
+    <header class="hero">
+      <div class="topo">
+        <span class="selo"><i></i>Menu aberto</span>
+        <button class="icon-btn" id="btnDono" aria-label="Entrar como dono">🔑</button>
+      </div>
+      <img class="logo" id="logo" alt="Logo" hidden>
+      <h1 id="nomeRest"></h1>
+      <p id="slogan"></p>
+      <div class="chips-info">
+        <span class="info" id="dataHoje"></span>
+        <span class="info mesa" id="mesaChip" hidden></span>
+      </div>
+    </header>
+
+    <div class="busca">
+      <span aria-hidden="true">🔍</span>
+      <input id="q" type="search" placeholder="Pesquisar pratos e bebidas" aria-label="Pesquisar no menu">
+    </div>
+
+    <div class="sticky">
+      <div class="chips" id="cats" role="group" aria-label="Categorias"></div>
+      <div class="chips preco" id="precos" role="group" aria-label="Filtrar por preço"></div>
+    </div>
+
+    <main id="lista"></main>
+    <div class="pano fino" style="margin-top:28px"></div>
+
+    <div class="fab-wrap">
+      <button class="fab" id="fab" hidden>
+        <span><span class="n" id="fabN">0</span>Ver pedido</span>
+        <span id="fabT">0 Kz</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="veu" id="veu"></div>
+
+<!-- Carrinho -->
+<section class="folha" id="folhaCarrinho" aria-label="O seu pedido">
+  <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+  <h2>O seu pedido</h2>
+  <div id="cLista"></div>
+  <div class="total"><span>Total</span><strong id="cTotal">0 Kz</strong></div>
+  <label class="campo" for="cMesa">Número da mesa</label>
+  <input class="campo-in" id="cMesa" inputmode="numeric" placeholder="Ex.: 5">
+  <label class="campo" for="cObs">Observações</label>
+  <textarea class="campo-in" id="cObs" placeholder="Ex.: sem pimenta, bebida gelada"></textarea>
+  <a class="btn-grande wpp" id="enviar" href="#" target="_blank" rel="noopener">Enviar pedido pelo WhatsApp</a>
+  <p class="nota">O pedido abre no WhatsApp com tudo preenchido. É só carregar em enviar.</p>
+</section>
+
+<!-- Entrar como dono -->
+<section class="folha" id="folhaLogin" aria-label="Entrar como dono">
+  <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+  <h2>Entrar como dono</h2>
+  <label class="campo" for="lSenha">Senha</label>
+  <input class="campo-in" id="lSenha" type="password" autocomplete="current-password" placeholder="Senha do dono">
+  <p class="erro" id="lErro" role="alert"></p>
+  <button class="btn-grande" id="lEntrar" style="margin-top:6px">Entrar</button>
+</section>
+
+<!-- Definições -->
+<section class="folha" id="folhaDef" aria-label="Definições">
+  <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+  <h2>Definições</h2>
+  <div class="foto-edit">
+    <div class="foto" id="dLogoPrev"></div>
+    <div class="col">
+      <label class="file-btn">Escolher logo<input type="file" accept="image/*" id="dLogoFile"></label>
+      <button class="mini sec" id="dLogoRem">Remover logo</button>
+    </div>
+  </div>
+  <label class="campo" for="dNome">Nome do restaurante</label>
+  <input class="campo-in" id="dNome">
+  <label class="campo" for="dSlogan">Frase curta</label>
+  <input class="campo-in" id="dSlogan">
+  <label class="campo" for="dWpp">WhatsApp que recebe os pedidos (com 244)</label>
+  <input class="campo-in" id="dWpp" inputmode="numeric" placeholder="2449XXXXXXXX">
+  <label class="campo" for="dSenha">Nova senha (deixe vazio para manter)</label>
+  <input class="campo-in" id="dSenha" type="password" autocomplete="new-password">
+  <button class="btn-grande" id="dGuardar">Guardar</button>
+  <button class="btn-grande perigo" id="dRepor">Repor menu de exemplo</button>
+</section>
+
+<!-- Backup -->
+<section class="folha" id="folhaBackup" aria-label="Backup">
+  <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+  <h2>Backup do menu</h2>
+  <p style="color:var(--osso-2);font-size:14px">Guarda uma cópia do menu num ficheiro, ou carrega uma cópia guardada antes.</p>
+  <button class="btn-grande" id="bExportar">Descarregar backup</button>
+  <label class="btn-grande sec" style="cursor:pointer">Carregar backup<input type="file" accept="application/json,.json" id="bImportar" hidden></label>
+</section>
+
+<!-- Editor de prato -->
+<section class="folha" id="folhaPrato" aria-label="Editar prato"></section>
+
+<!-- Editor de categoria -->
+<section class="folha" id="folhaCat" aria-label="Editar categoria"></section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===================== DADOS DE EXEMPLO ===================== */
+const EXEMPLO = {
+  nome:'Quintal da Mamã',
+  slogan:'Cozinha angolana, do fogo à mesa.',
+  whatsapp:'244900000000',
+  senha:'1234',
+  logo:'',
+  cats:[
+    { id:'c1', cat:'Pratos típicos', sub:'Feitos na panela, como em casa', itens:[
+      { nome:'Muamba de Galinha', desc:'Com funge, arroz e quiabo.', preco:6500, emoji:'🍲', tag:'Mais pedido' },
+      { nome:'Calulu de Peixe', desc:'Peixe seco e fresco, quiabo e folhas de batata-doce.', preco:7000, emoji:'🐟' },
+      { nome:'Mufete de Cacusso', desc:'Peixe grelhado, feijão de óleo de palma, mandioca e banana.', preco:8500, emoji:'🍽️', tag:'Mais pedido' },
+      { nome:'Cabidela de Frango', desc:'Com arroz branco e farinha de mandioca.', preco:5500, emoji:'🍗' },
+      { nome:'Feijão de Óleo de Palma', desc:'Com farinha de bombó e peixe frito.', preco:4500, emoji:'🫘' }
+    ]},
+    { id:'c2', cat:'Grelhados', sub:'Direto da brasa', itens:[
+      { nome:'Picanha na Brasa', desc:'400 g, com batata frita e salada.', preco:12000, emoji:'🥩' },
+      { nome:'Frango de Churrasco', desc:'Meio frango com piri-piri da casa.', preco:6000, emoji:'🍗', tag:'Picante' },
+      { nome:'Carapau Grelhado', desc:'Com batata-doce e molho de tomate.', preco:5000, emoji:'🐟' },
+      { nome:'Espetada Mista', desc:'Vaca, frango e chouriço.', preco:9500, emoji:'🍢' }
+    ]},
+    { id:'c3', cat:'Pizzas', sub:'Forno a lenha', itens:[
+      { nome:'Margherita', desc:'Tomate, mozzarella e manjericão.', preco:5500, emoji:'🍕' },
+      { nome:'Frango com Catupiry', desc:'Frango desfiado e queijo cremoso.', preco:7500, emoji:'🍕' },
+      { nome:'Calabresa', desc:'Chouriço, cebola e azeitonas.', preco:7000, emoji:'🍕', tag:'Picante' }
+    ]},
+    { id:'c4', cat:'Bebidas', sub:'Bem geladas', itens:[
+      { nome:'Água mineral', desc:'50 cl.', preco:500, emoji:'💧' },
+      { nome:'Refrigerante', desc:'Lata 33 cl.', preco:800, emoji:'🥤' },
+      { nome:'Cerveja Cuca', desc:'Garrafa 33 cl.', preco:1000, emoji:'🍺' },
+      { nome:'Sumo de Múcua', desc:'Fruto do imbondeiro, natural.', preco:1800, emoji:'🧃' },
+      { nome:'Caipirinha', desc:'Limão, açúcar e cachaça.', preco:3500, emoji:'🍹' }
+    ]},
+    { id:'c5', cat:'Sobremesas', sub:'Para fechar bem', itens:[
+      { nome:'Pudim de Leite', desc:'Com calda de caramelo.', preco:2500, emoji:'🍮' },
+      { nome:'Gelado de Manga', desc:'Duas bolas.', preco:2000, emoji:'🍨' },
+      { nome:'Bolo de Ginguba', desc:'Amendoim torrado e canela.', preco:2200, emoji:'🍰' }
+    ]}
+  ]
+};
+let _n = 0;
+const uid = () => 'i' + Date.now().toString(36) + (_n++).toString(36) + Math.random().toString(36).slice(2,5);
+function exemploCompleto(){
+  const d = JSON.parse(JSON.stringify(EXEMPLO));
+  d.cats.forEach(c => c.itens.forEach(i => { i.id = uid(); i.hoje = true; i.img = ''; }));
+  return d;
+}
+
+/* ===================== ARMAZENAMENTO =====================
+   Hoje guarda no navegador deste aparelho (localStorage).
+   Para os clientes verem as alterações em tempo real, troque
+   estas duas funções por uma base de dados online (Supabase, Firebase). */
+const CHAVE = 'menudigital_v2';
+let avisouSemGuardar = false;
+function carregar(){
+  try { const t = localStorage.getItem(CHAVE); if (t) { const d = JSON.parse(t); if (d && d.cats) return d; } } catch(e){}
+  return null;
+}
+function guardar(){
+  try { localStorage.setItem(CHAVE, JSON.stringify(D)); }
+  catch(e){ if (!avisouSemGuardar){ avisouSemGuardar = true; toast('Não foi possível guardar neste ambiente. As alterações duram até fechar a página.'); } }
+}
+
+/* ===================== ESTADO ===================== */
+let D = carregar() || exemploCompleto();
+const estado = { cat:'Todas', faixa:'todos', q:'', carrinho:{}, dono:false };
+let mesa = '';
+const params = new URLSearchParams(location.search);
+if (params.get('mesa')) mesa = params.get('mesa').replace(/\D/g,'').slice(0,3);
+
+const FAIXAS = [
+  { id:'todos', rotulo:'Todos os preços', ok:()=>true },
+  { id:'ate3',  rotulo:'Até 3.000 Kz', ok:p=>p<=3000 },
+  { id:'meio',  rotulo:'3.000 a 8.000 Kz', ok:p=>p>3000 && p<=8000 },
+  { id:'mais8', rotulo:'Mais de 8.000 Kz', ok:p=>p>8000 }
+];
+
+const $ = id => document.getElementById(id);
+const kz = n => String(Math.round(Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.') + ' Kz';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todos = () => D.cats.flatMap(c => c.itens.map(i => ({...i, _cat:c.cat, _catId:c.id})));
+const achar = id => { for (const c of D.cats){ const i = c.itens.find(x => x.id===id); if (i) return {item:i, cat:c}; } return null; };
+const visivel = i => estado.dono || i.hoje !== false;
+
+/* ===================== IMAGENS ===================== */
+function lerImagem(file, max, tipo, q){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const r = Math.min(1, max / Math.max(im.width, im.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(im.width * r); c.height = Math.round(im.height * r);
+        const x = c.getContext('2d');
+        if (tipo === 'image/jpeg'){ x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height); }
+        x.drawImage(im, 0, 0, c.width, c.height);
+        res(c.toDataURL(tipo, q));
+      };
+      im.onerror = rej; im.src = fr.result;
+    };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+
+/* ===================== TOPO / MARCA ===================== */
+function renderMarca(){
+  $('nomeRest').textContent = D.nome;
+  $('slogan').textContent = D.slogan;
+  document.title = D.nome + ' - Menu';
+  const l = $('logo');
+  if (D.logo){ l.src = D.logo; l.hidden = false; } else { l.hidden = true; l.removeAttribute('src'); }
+  $('dataHoje').textContent = 'Menu de hoje, ' + new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+  const m = $('mesaChip'); m.hidden = !mesa; m.textContent = 'Mesa ' + mesa;
+  $('barraDono').classList.toggle('on', estado.dono);
+  $('btnDono').hidden = estado.dono;
+}
+
+/* ===================== FILTROS ===================== */
+function renderChips(){
+  const cats = D.cats.filter(c => c.itens.some(visivel)).map(c => c.cat);
+  if (estado.cat !== 'Todas' && !cats.includes(estado.cat)) estado.cat = 'Todas';
+  $('cats').innerHTML = ['Todas', ...cats].map(c => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${estado.cat===c}">${esc(c)}</button>`).join('');
+  $('precos').innerHTML = FAIXAS.map(f => `<button class="chip" data-faixa="${f.id}" aria-pressed="${estado.faixa===f.id}">${f.rotulo}</button>`).join('');
+}
+$('cats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; estado.cat = b.dataset.cat; renderChips(); renderLista(); });
+$('precos').addEventListener('click', e => { const b = e.target.closest('[data-faixa]'); if(!b) return; estado.faixa = b.dataset.faixa; renderChips(); renderLista(); });
+$('q').addEventListener('input', e => { estado.q = e.target.value.trim().toLowerCase(); renderLista(); });
+
+/* ===================== LISTA ===================== */
+function itemHTML(i){
+  const qt = estado.carrinho[i.id] || 0;
+  const foto = i.img ? `<img src="${esc(i.img)}" alt="${esc(i.nome)}" loading="lazy">` : `<span aria-hidden="true">${esc(i.emoji || '🍽️')}</span>`;
+  const tag = i.tag ? `<span class="tag ${(i.tag==='Mais pedido'||i.tag==='Prato do dia')?'top':''}">${esc(i.tag)}</span>` : '';
+  const off = i.hoje === false ? `<span class="tag off">Fora do menu de hoje</span>` : '';
+  let acao;
+  if (i.hoje === false) acao = '';
+  else if (qt) acao = `<div class="qtd"><button data-menos="${i.id}" aria-label="Tirar um">−</button><span>${qt}</span><button data-mais="${i.id}" aria-label="Juntar um">+</button></div>`;
+  else acao = `<button class="add" data-mais="${i.id}">Adicionar</button>`;
+  const adm = estado.dono ? `<div class="adm-acoes"><button class="mini" data-edit="${i.id}">Editar</button><button class="mini sec" data-toggle="${i.id}">${i.hoje===false?'Pôr no menu de hoje':'Tirar do menu de hoje'}</button></div>` : '';
+  return `<article class="item ${i.hoje===false?'off':''}"><div class="foto">${foto}</div><div>
+    <h3>${esc(i.nome)} ${tag} ${off}</h3><p>${esc(i.desc)}</p>
+    <div class="linha-preco"><span class="preco-v">${kz(i.preco)}</span>${acao}</div>${adm}</div></article>`;
+}
+function renderLista(){
+  const faixa = FAIXAS.find(f => f.id === estado.faixa);
+  let html = '', total = 0;
+  D.cats.forEach(c => {
+    if (estado.cat !== 'Todas' && estado.cat !== c.cat) return;
+    const itens = c.itens.filter(i => visivel(i) && faixa.ok(i.preco) && (!estado.q || (i.nome+' '+i.desc).toLowerCase().includes(estado.q)));
+    const mostraVazia = estado.dono && c.itens.length === 0 && !estado.q && estado.faixa==='todos';
+    if (!itens.length && !mostraVazia) return;
+    total += itens.length;
+    const admCab = estado.dono ? `<div style="display:flex;gap:6px"><button class="mini sec" data-catedit="${c.id}">Categoria</button><button class="mini" data-novo="${c.id}">+ Prato</button></div>` : '';
+    html += `<div class="cat-cab"><div><h2 class="cat-titulo">${esc(c.cat)}</h2><p class="cat-sub">${itens.length} ${itens.length===1?'item disponível':'itens disponíveis'}. ${esc(c.sub)}.</p></div>${admCab}</div>`;
+    html += itens.map(itemHTML).join('');
+  });
+  if (estado.dono) html += `<div style="margin-top:22px"><button class="btn-grande sec" data-novacat>+ Nova categoria</button></div>`;
+  if (!total && !estado.dono) html = `<div class="vazio"><b>Nada encontrado</b>Tente outra palavra ou mude o filtro de preço.</div>`;
+  $('lista').innerHTML = html;
+}
+$('lista').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  const d = t.dataset;
+  if (d.mais) { const novo = !estado.carrinho[d.mais]; mudar(d.mais, +1); if (novo) toast('Adicionado ao pedido'); }
+  else if (d.menos) mudar(d.menos, -1);
+  else if (d.edit) abrirPrato(d.edit);
+  else if (d.novo) abrirPrato(null, d.novo);
+  else if (d.toggle) { const f = achar(d.toggle); f.item.hoje = f.item.hoje === false; guardar(); renderTudo(); toast(f.item.hoje ? 'Está no menu de hoje' : 'Saiu do menu de hoje'); }
+  else if (d.catedit) abrirCat(d.catedit);
+  else if ('novacat' in d) abrirCat(null);
+});
+
+/* ===================== CARRINHO ===================== */
+function limparCarrinho(){ for (const id of Object.keys(estado.carrinho)) { const f = achar(id); if (!f || f.item.hoje === false) delete estado.carrinho[id]; } }
+function mudar(id, d){
+  const novo = (estado.carrinho[id] || 0) + d;
+  if (novo <= 0) delete estado.carrinho[id]; else estado.carrinho[id] = novo;
+  renderLista(); renderCarrinho();
+}
+function totais(){ let n=0, t=0; for (const [id,q] of Object.entries(estado.carrinho)) { const f = achar(id); if (f){ n+=q; t+=q*f.item.preco; } } return {n,t}; }
+function renderCarrinho(){
+  limparCarrinho();
+  const {n,t} = totais();
+  $('fab').hidden = n === 0;
+  $('fabN').textContent = n; $('fabT').textContent = kz(t); $('cTotal').textContent = kz(t);
+  const linhas = Object.entries(estado.carrinho);
+  $('cLista').innerHTML = linhas.length ? linhas.map(([id,q]) => { const i = achar(id).item; return `
+    <div class="c-linha"><div><b>${esc(i.nome)}</b><small>${kz(i.preco)} cada</small></div>
+    <div class="qtd"><button data-menos="${id}" aria-label="Tirar um">−</button><span>${q}</span><button data-mais="${id}" aria-label="Juntar um">+</button></div></div>`; }).join('')
+    : `<div class="vazio"><b>O pedido está vazio</b>Adicione pratos do menu.</div>`;
+  const a = $('enviar'); a.classList.toggle('off', n===0); a.href = n ? linkWhatsApp() : '#';
+}
+$('cLista').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.mais) mudar(t.dataset.mais, +1); else if (t.dataset.menos) mudar(t.dataset.menos, -1);
+});
+$('cMesa').addEventListener('input', () => { mesa = $('cMesa').value.replace(/\D/g,'').slice(0,3); renderMarca(); renderCarrinho(); });
+$('cObs').addEventListener('input', renderCarrinho);
+function linkWhatsApp(){
+  const {t} = totais(); const obs = $('cObs').value.trim();
+  let msg = `*Novo pedido - ${D.nome}*\n` + (mesa ? `Mesa: ${mesa}\n\n` : `\n`);
+  for (const [id,q] of Object.entries(estado.carrinho)) { const i = achar(id).item; msg += `${q}x ${i.nome} - ${kz(q*i.preco)}\n`; }
+  msg += `\n*Total: ${kz(t)}*` + (obs ? `\nObs.: ${obs}` : '');
+  return `https://wa.me/${String(D.whatsapp).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`;
+}
+
+/* ===================== FOLHAS ===================== */
+let aberta = null;
+function abrir(id){ fechar(); aberta = $(id); aberta.classList.add('on'); $('veu').classList.add('on'); }
+function fechar(){ if (aberta) aberta.classList.remove('on'); aberta = null; $('veu').classList.remove('on'); }
+$('veu').addEventListener('click', fechar);
+document.querySelectorAll('[data-fecha]').forEach(b => b.addEventListener('click', fechar));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
+function renderTudo(){ renderMarca(); renderChips(); renderLista(); renderCarrinho(); }
+
+$('fab').addEventListener('click', () => { $('cMesa').value = mesa; renderCarrinho(); abrir('folhaCarrinho'); });
+$('sideQR').addEventListener('click', () => { mesa = String(1 + Math.floor(Math.random()*20)); renderMarca(); toast('QR lido: Mesa ' + mesa); $('app').scrollTo?.({top:0,behavior:'smooth'}); window.scrollTo({top:0,behavior:'smooth'}); });
+
+/* ===================== ENTRAR / SAIR (dono) ===================== */
+function pedirSenha(){ $('lSenha').value=''; $('lErro').textContent=''; abrir('folhaLogin'); setTimeout(()=>$('lSenha').focus(), 280); }
+$('btnDono').addEventListener('click', pedirSenha);
+$('sideDono').addEventListener('click', () => estado.dono ? toast('Já está no modo dono') : pedirSenha());
+function entrar(){
+  if ($('lSenha').value === String(D.senha)) { estado.dono = true; fechar(); renderTudo(); toast('Modo dono ativo'); }
+  else { $('lErro').textContent = 'Senha errada. Tente outra vez.'; }
+}
+$('lEntrar').addEventListener('click', entrar);
+$('lSenha').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('bSair').addEventListener('click', () => { estado.dono = false; renderTudo(); toast('Saiu do modo dono'); });
+
+/* ===================== EDITAR PRATO ===================== */
+let edit = null; // { id|null, catId, img }
+function abrirPrato(id, catIdNovo){
+  const f = id ? achar(id) : null;
+  const i = f ? f.item : { nome:'', desc:'', preco:'', tag:'', hoje:true, img:'', emoji:'🍽️' };
+  edit = { id: id || null, img: i.img || '' };
+  const catId = f ? f.cat.id : catIdNovo;
+  $('folhaPrato').innerHTML = `
+    <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+    <h2>${id ? 'Editar prato' : 'Novo prato'}</h2>
+    <div class="foto-edit">
+      <div class="foto" id="pPrev"></div>
+      <div class="col">
+        <label class="file-btn">Escolher foto<input type="file" accept="image/*" id="pFoto"></label>
+        <button class="mini sec" id="pFotoRem">Remover foto</button>
+      </div>
+    </div>
+    <label class="campo" for="pNome">Nome do prato</label>
+    <input class="campo-in" id="pNome" value="${esc(i.nome)}">
+    <label class="campo" for="pDesc">Descrição</label>
+    <textarea class="campo-in" id="pDesc">${esc(i.desc)}</textarea>
+    <div class="linha2">
+      <div><label class="campo" for="pPreco">Preço (Kz)</label><input class="campo-in" id="pPreco" inputmode="numeric" value="${esc(i.preco)}"></div>
+      <div><label class="campo" for="pTag">Etiqueta</label>
+        <select class="campo-in" id="pTag">${['','Prato do dia','Mais pedido','Picante','Novo'].map(t=>`<option value="${t}" ${i.tag===t?'selected':''}>${t||'Nenhuma'}</option>`).join('')}</select></div>
+    </div>
+    <label class="campo" for="pCat">Categoria</label>
+    <select class="campo-in" id="pCat">${D.cats.map(c=>`<option value="${c.id}" ${c.id===catId?'selected':''}>${esc(c.cat)}</option>`).join('')}</select>
+    <label class="check"><input type="checkbox" id="pHoje" ${i.hoje!==false?'checked':''}>Disponível no menu de hoje</label>
+    <p class="erro" id="pErro" role="alert"></p>
+    <button class="btn-grande" id="pGuardar" style="margin-top:6px">Guardar</button>
+    ${id ? '<button class="btn-grande perigo" id="pApagar">Apagar prato</button>' : ''}`;
+  $('folhaPrato').querySelector('[data-fecha]').addEventListener('click', fechar);
+  previaPrato(i.emoji);
+  $('pFoto').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    try { edit.img = await lerImagem(file, 640, 'image/jpeg', .78); previaPrato(i.emoji); } catch(err){ $('pErro').textContent = 'Não consegui ler essa imagem.'; }
+  });
+  $('pFotoRem').addEventListener('click', () => { edit.img = ''; previaPrato(i.emoji); });
+  $('pGuardar').addEventListener('click', () => guardarPrato(catId));
+  if (id) $('pApagar').addEventListener('click', () => {
+    if (!confirm('Apagar este prato do menu?')) return;
+    const f2 = achar(id); f2.cat.itens = f2.cat.itens.filter(x => x.id !== id);
+    guardar(); fechar(); renderTudo(); toast('Prato apagado');
+  });
+  abrir('folhaPrato');
+}
+function previaPrato(emoji){ $('pPrev').innerHTML = edit.img ? `<img src="${edit.img}" alt="">` : `<span>${esc(emoji||'🍽️')}</span>`; }
+function guardarPrato(catIdAntiga){
+  const nome = $('pNome').value.trim();
+  const preco = parseInt($('pPreco').value.replace(/\D/g,''), 10);
+  if (!nome) { $('pErro').textContent = 'Escreva o nome do prato.'; return; }
+  if (!preco && preco !== 0) { $('pErro').textContent = 'Escreva o preço em Kz, só números.'; return; }
+  const novoCat = D.cats.find(c => c.id === $('pCat').value);
+  const dados = { nome, desc:$('pDesc').value.trim(), preco, tag:$('pTag').value, hoje:$('pHoje').checked, img:edit.img };
+  if (edit.id) {
+    const f = achar(edit.id); Object.assign(f.item, dados);
+    if (f.cat.id !== novoCat.id) { f.cat.itens = f.cat.itens.filter(x => x.id !== edit.id); novoCat.itens.push(f.item); }
+  } else {
+    novoCat.itens.push({ id:uid(), emoji:'🍽️', ...dados });
+  }
+  guardar(); fechar(); renderTudo(); toast('Prato guardado');
+}
+
+/* ===================== EDITAR CATEGORIA ===================== */
+function abrirCat(id){
+  const c = id ? D.cats.find(x => x.id === id) : { cat:'', sub:'' };
+  $('folhaCat').innerHTML = `
+    <button class="fecha" data-fecha aria-label="Fechar">✕</button>
+    <h2>${id ? 'Editar categoria' : 'Nova categoria'}</h2>
+    <label class="campo" for="kNome">Nome</label><input class="campo-in" id="kNome" value="${esc(c.cat)}">
+    <label class="campo" for="kSub">Frase curta</label><input class="campo-in" id="kSub" value="${esc(c.sub)}" placeholder="Ex.: Direto da brasa">
+    <p class="erro" id="kErro" role="alert"></p>
+    <button class="btn-grande" id="kGuardar" style="margin-top:6px">Guardar</button>
+    ${id ? '<button class="btn-grande perigo" id="kApagar">Apagar categoria e os pratos dela</button>' : ''}`;
+  $('folhaCat').querySelector('[data-fecha]').addEventListener('click', fechar);
+  $('kGuardar').addEventListener('click', () => {
+    const nome = $('kNome').value.trim(); if (!nome) { $('kErro').textContent = 'Escreva o nome da categoria.'; return; }
+    if (id) { c.cat = nome; c.sub = $('kSub').value.trim(); } else D.cats.push({ id:uid(), cat:nome, sub:$('kSub').value.trim(), itens:[] });
+    guardar(); fechar(); renderTudo(); toast('Categoria guardada');
+  });
+  if (id) $('kApagar').addEventListener('click', () => {
+    if (!confirm('Apagar esta categoria e todos os pratos dela?')) return;
+    D.cats = D.cats.filter(x => x.id !== id); guardar(); fechar(); renderTudo(); toast('Categoria apagada');
+  });
+  abrir('folhaCat');
+}
+
+/* ===================== DEFINIÇÕES ===================== */
+let logoTmp = '';
+function previaLogo(){ $('dLogoPrev').innerHTML = logoTmp ? `<img src="${logoTmp}" alt="" style="object-fit:contain">` : '<span style="font-size:13px;color:var(--osso-2);text-align:center;padding:6px">Sem logo</span>'; }
+$('bDef').addEventListener('click', () => {
+  logoTmp = D.logo || ''; previaLogo();
+  $('dNome').value = D.nome; $('dSlogan').value = D.slogan; $('dWpp').value = D.whatsapp; $('dSenha').value = '';
+  abrir('folhaDef');
+});
+$('dLogoFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { logoTmp = await lerImagem(f, 480, 'image/png'); previaLogo(); } catch(err){ toast('Não consegui ler essa imagem'); }
+});
+$('dLogoRem').addEventListener('click', () => { logoTmp = ''; previaLogo(); });
+$('dGuardar').addEventListener('click', () => {
+  D.nome = $('dNome').value.trim() || D.nome;
+  D.slogan = $('dSlogan').value.trim();
+  D.whatsapp = $('dWpp').value.replace(/\D/g,'') || D.whatsapp;
+  D.logo = logoTmp;
+  const s = $('dSenha').value; if (s) { if (s.length < 4) { toast('A senha precisa de pelo menos 4 caracteres'); return; } D.senha = s; }
+  guardar(); fechar(); renderTudo(); toast('Definições guardadas');
+});
+$('dRepor').addEventListener('click', () => {
+  if (!confirm('Repor o menu de exemplo? Isto apaga as suas alterações.')) return;
+  const senha = D.senha; D = exemploCompleto(); D.senha = senha; guardar(); fechar(); renderTudo(); toast('Menu de exemplo reposto');
+});
+
+/* ===================== BACKUP ===================== */
+$('bBackup').addEventListener('click', () => abrir('folhaBackup'));
+$('bExportar').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(D)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'menu-' + D.nome.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('bImportar').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try { const d = JSON.parse(fr.result); if (!d || !Array.isArray(d.cats)) throw 0; D = d; guardar(); fechar(); renderTudo(); toast('Backup carregado'); }
+    catch(err){ toast('Esse ficheiro não é um backup válido'); }
+  };
+  fr.readAsText(f);
+});
+
+/* ===================== TOAST ===================== */
+let tt;
+function toast(txt){ const t = $('toast'); t.textContent = txt; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
+
+renderTudo();
+</script>
+</body>
+</html>
